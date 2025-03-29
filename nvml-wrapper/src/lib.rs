@@ -156,6 +156,7 @@ const LIB_PATH: &str = "nvml.dll";
 
 #[cfg(target_os = "linux")]
 const LIB_PATH: &str = "libnvidia-ml.so.1";
+const LIB_PATH_NIX: &str = "@driverLink@/lib/libnvidia-ml.so.1";
 
 /// Determines the major version of the CUDA driver given the full version.
 ///
@@ -230,7 +231,7 @@ impl Nvml {
     // Checked against local
     #[doc(alias = "nvmlInit_v2")]
     pub fn init() -> Result<Self, NvmlError> {
-        Self::init_internal(LIB_PATH)
+        Self::init_internal(LIB_PATH).or_else(|_| Self::init_internal(LIB_PATH_NIX))
     }
 
     fn init_internal(path: impl AsRef<std::ffi::OsStr>) -> Result<Self, NvmlError> {
@@ -275,6 +276,7 @@ impl Nvml {
     #[doc(alias = "nvmlInitWithFlags")]
     pub fn init_with_flags(flags: InitFlags) -> Result<Self, NvmlError> {
         Self::init_with_flags_internal(LIB_PATH, flags)
+            .or_else(|_| Self::init_with_flags_internal(LIB_PATH_NIX, flags))
     }
 
     fn init_with_flags_internal(
